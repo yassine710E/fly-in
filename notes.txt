@@ -1,0 +1,22 @@
+1-PROJECT RULES
+-python 3.10
+-flake8
+-handle all exceptions with try and  except
+-use with for context managers (safety)
+-evaluator will tests : 
+	-Passing a file that doesn't exist
+	-Passing a malformed map
+	-Passing a map with no valid path
+	-Passing a map where nb_drones is missing
+-use type hints and use mypy
+-use docstring
+-create test of the program using pytest or unitest
+-.gitignore to igmore pushing pycache .... (no need files)
+-use virtual environment
+2-PROJECT PROBLEM
+-you have n number of drones the goal is transfer all drones from start point
+to end point with : 
+	+ Minimum number of turns
+	+ Minimum congestion
+	+ Maximum throughput
+	+ Optimal path selection(same cost == bfs,different cost == dijkstra)i
