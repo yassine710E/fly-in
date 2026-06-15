@@ -23,20 +23,28 @@ class Display:
                 if event.type == self.pygame.QUIT:
                     running = False
             self.screen.blit(background,(0,0))
-            self.draw_zones()
+            self.draw_connections(x,y)
+            self.draw_zones(x,y)
             for i in range(0,self.config_data['nb_drones']):
-                self.display_drone(drone_image)
+                self.display_drone(drone_image,x,y)
             
             self.pygame.display.flip()
 
-    def display_drone(self,drone_image):
+    def display_drone(self,drone_image,x,y):
         coordinates_start = [zone['coordinates'] for zone in self.config_data['zones'] if zone['type'] == 'start_hub'][0]
-        self.screen.blit(drone_image,((coordinates_start[0] * 10) + 20,(coordinates_start[1] * 10) + 20))
+        self.screen.blit(drone_image,((coordinates_start[0]*70)+(x//2)-15,(coordinates_start[1]*70)+(y//2)-15))
     
-    def draw_zones(self):
+    def draw_zones(self,x,y):
         for zone in self.config_data['zones']:
-            print(zone['coordinates'])
-            self.pygame.draw.circle(self.screen, (255, 0, 0), ((zone['coordinates'][0]*100)+50, (zone['coordinates'][1]*100)+50), 20)
-        
-    
-        
+            self.pygame.draw.circle(self.screen, (255, 0, 0), ((zone['coordinates'][0]*70)+(x//2),(zone['coordinates'][1]*70)+(y//2)) , 20)
+    def draw_connections(self,x,y):
+        for connection in self.config_data['connections']:
+            dict_zone_1 : dict = [zone for zone in self.config_data['zones'] if zone['name'] == connection[0]][0]
+            dict_zone_2 : dict = [zone for zone in self.config_data['zones'] if zone['name'] == connection[1]][0]
+            
+            self.pygame.draw.line(self.screen,(0,255,0),
+                                  ((dict_zone_1['coordinates'][0]*70) + (x//2),(dict_zone_1['coordinates'][1]*70) + (y//2)),
+                                  ((dict_zone_2['coordinates'][0]*70) + (x//2),(dict_zone_2['coordinates'][1]*70) + (y//2)),
+                                  2)
+            # print(dict_zone_1)
+            # print(dict_zone_2)

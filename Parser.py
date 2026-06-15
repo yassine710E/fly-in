@@ -1,4 +1,5 @@
 import re
+import pygame
 
 class ParsingError(Exception):
     pass
@@ -6,7 +7,7 @@ class Parser:
     def __init__(self, file_name: str) -> None:
         self.file_name = file_name
         self.metadata = {
-            'color':['red','blue','green','yellow','gray','black','white','orange','purple','pink','brown','cyan','magenta'],
+            'color':list(pygame.color.THECOLORS.keys()),
             'zone':['normal','blocked','restricted','priority'],
             'max_drones':1
         }

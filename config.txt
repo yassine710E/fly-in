@@ -1,7 +1,5 @@
 # blocked zone as the only path
 nb_drones: 2
-hub: wall 2 20 [zone=blocked]
 start_hub: start 0 0    
-end_hub: goal 110 10       
-connection: start-wall
-connection: wall-goal [ max_link_capacity=1]
+end_hub: goal 0 1000       
+connection: start-goal
