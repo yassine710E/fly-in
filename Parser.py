@@ -92,8 +92,9 @@ class Parser:
         tuple_connections : tuple = re.findall(fr"^({zone_names})-({zone_names})",striped_values)[0]
         if tuple_connections[0] == tuple_connections[1]:
             return None
-        if tuple_connections in self.config_data['connections'] or tuple_connections[::-1] in self.config_data['connections']:
-            return None
+        # if tuple_connections in self.config_data['connections'] or tuple_connections[::-1] in self.config_data['connections']:
+        #     return None
+
         return tuple_connections
         
     def parsing(self)->dict:

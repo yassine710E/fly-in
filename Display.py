@@ -1,8 +1,9 @@
-
 class Display:
-    def __init__(self,pygame,data):
+    def __init__(self,pygame,data,min_x,min_y):
         self.pygame = pygame
         self.config_data = data
+        self.min_x = min_x
+        self.min_y = min_y
     
     def __enter__(self):
         self.pygame.init()
@@ -23,28 +24,28 @@ class Display:
                 if event.type == self.pygame.QUIT:
                     running = False
             self.screen.blit(background,(0,0))
-            self.draw_connections(x,y)
-            self.draw_zones(x,y)
+            self.draw_connections()
+            self.draw_zones()
+            
             for i in range(0,self.config_data['nb_drones']):
-                self.display_drone(drone_image,x,y)
+                self.display_drone(drone_image)
             
             self.pygame.display.flip()
 
-    def display_drone(self,drone_image,x,y):
+    def display_drone(self,drone_image):
         coordinates_start = [zone['coordinates'] for zone in self.config_data['zones'] if zone['type'] == 'start_hub'][0]
-        self.screen.blit(drone_image,((coordinates_start[0]*70)+(x//2)-15,(coordinates_start[1]*70)+(y//2)-15))
+        self.screen.blit(drone_image,(((coordinates_start[0]-self.min_x)*70)+50-15,((coordinates_start[1]-self.min_y)*70)+50-15))
     
-    def draw_zones(self,x,y):
+    def draw_zones(self):
         for zone in self.config_data['zones']:
-            self.pygame.draw.circle(self.screen, (255, 0, 0), ((zone['coordinates'][0]*70)+(x//2),(zone['coordinates'][1]*70)+(y//2)) , 20)
-    def draw_connections(self,x,y):
+            self.pygame.draw.circle(self.screen, self.pygame.color.THECOLORS[zone['metadata']['color']], (((zone['coordinates'][0]-self.min_x)*70)+50,((zone['coordinates'][1]-self.min_y)*70)+50) , 20)
+    
+    def draw_connections(self):
         for connection in self.config_data['connections']:
             dict_zone_1 : dict = [zone for zone in self.config_data['zones'] if zone['name'] == connection[0]][0]
             dict_zone_2 : dict = [zone for zone in self.config_data['zones'] if zone['name'] == connection[1]][0]
             
             self.pygame.draw.line(self.screen,(0,255,0),
-                                  ((dict_zone_1['coordinates'][0]*70) + (x//2),(dict_zone_1['coordinates'][1]*70) + (y//2)),
-                                  ((dict_zone_2['coordinates'][0]*70) + (x//2),(dict_zone_2['coordinates'][1]*70) + (y//2)),
+                                  (((dict_zone_1['coordinates'][0]-self.min_x)*70)+50 ,((dict_zone_1['coordinates'][1]-self.min_y)*70)+50),
+                                  (((dict_zone_2['coordinates'][0]-self.min_x)*70)+50 ,((dict_zone_2['coordinates'][1]-self.min_y)*70)+50),
                                   2)
-            # print(dict_zone_1)
-            # print(dict_zone_2)

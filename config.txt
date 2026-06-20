@@ -1,5 +1,0 @@
-# blocked zone as the only path
-nb_drones: 2
-start_hub: start 0 0    
-end_hub: goal 0 1000       
-connection: start-goal
