@@ -89,13 +89,17 @@ class Parser:
         striped_values : str = (splited_line[1]).strip()
         if re.search(fr"^({zone_names})-({zone_names})(\s+\[\s*max_link_capacity\s*=\s*[1-9]\d*\s*\])?$",striped_values) is None:
             return None
-        tuple_connections : tuple = re.findall(fr"^({zone_names})-({zone_names})",striped_values)[0]
+        connections_and_metadata : tuple = striped_values.split()
+        tuple_connections = tuple(connections_and_metadata[0].split('-')) 
+        metadata = {'max_link_capacity':1}  
         if tuple_connections[0] == tuple_connections[1]:
             return None
-        # if tuple_connections in self.config_data['connections'] or tuple_connections[::-1] in self.config_data['connections']:
-        #     return None
+        if tuple_connections in self.config_data['connections'] or tuple_connections[::-1] in self.config_data['connections']:
+            return None
+        if len(connections_and_metadata) == 2:
+            metadata = dict(re.findall(r"\[\s*(max_link_capacity)\s*=\s*([1-9]\d*)\s*\]",connections_and_metadata[1]))
 
-        return tuple_connections
+        return {'tuple_connections' :tuple_connections,'metadata' : metadata}
         
     def parsing(self)->dict:
         self.set_content()
