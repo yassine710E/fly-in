@@ -1,9 +1,9 @@
 import heapq
+from Zone import Zone
 
 class Algo:
-    def __init__(self,connections,zones):
+    def __init__(self,connections):
         self.connections = connections
-        self.zones = zones
         self.costs = {'normal':1,'restricted':2,'priority':1,'blocked':None}
         self.graph = dict()
         self.priority_zones = set()
@@ -11,8 +11,8 @@ class Algo:
         
     def create_graph(self):
         for connection in self.connections:
-            obj_start = connection.start_and_target_objects['start']
-            obj_target = connection.start_and_target_objects['target']
+            obj_start = Zone.get_zone_by_its_prop(connection.tuple_connections[0],'name')
+            obj_target = Zone.get_zone_by_its_prop(connection.tuple_connections[1],'name')
             if obj_target.metadata['zone'] == 'priority':
                 self.priority_zones.add(obj_target.name)
             if obj_start.metadata['zone'] == 'priority':
@@ -24,11 +24,9 @@ class Algo:
             if self.costs[obj_start.metadata['zone']]:
                 if self.graph.get(obj_target.name) is None:
                     self.graph[obj_target.name] = []
-                self.graph[obj_target.name].append((obj_start.name,self.costs[obj_start.metadata['zone']]))                   
+                self.graph[obj_target.name].append((obj_start.name,self.costs[obj_start.metadata['zone']]))    
     
     def dijkstra(self,start_point,end_point):
-        # start_point = [zone.name for zone in self.zones if zone.type == 'start_hub'][0]
-        # end_point = [zone.name for zone in self.zones if zone.type == 'end_hub'][0]
         visited = []
         priority_queue = []
         dist_point_and_prev = {start_point : None}

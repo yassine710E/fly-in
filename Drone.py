@@ -1,8 +1,8 @@
 class Drone:
     def __init__(self,id):
         self.id = id
-        self.current_hub = None
+        self.path = None
     
-    def init_current_start_hub(self,obj_zone):
-        self.current_hub = obj_zone
+    def set_path(self,dijkstra_path):
+        self.path = dijkstra_path
         
