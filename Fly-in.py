@@ -7,7 +7,14 @@ from Zone import Zone
 from Connection import Connection
 from Drone import Drone
 
-
+def get_target_zones_object(target_connections,hub):
+    connected_target_zones = []
+    for connection in target_connections:
+        zone = Zone.get_zone_by_its_prop(connection.tuple_connections[1],'name')
+        if zone.shortest_path_from_current_hub_to_end and  hub.name not in zone.shortest_path_from_current_hub_to_end['path'] and (len(zone.l_drones) < zone.metadata['max_drones'] or zone.type == "end_hub"):
+            connected_target_zones.append(zone)
+            
+    return connected_target_zones
 if __name__ == "__main__":
     try:
         file_name = sys.argv[1]
@@ -51,19 +58,18 @@ if __name__ == "__main__":
         l_drones_end =end_zone.l_drones
         while len(l_drones_end) != len(l_drones):
             hubs = [hub for hub in Zone.l_zones if hub.l_drones and hub.type != 'end_hub']
-            hubs.sort(key=lambda x:x.shortest_path_from_current_hub_to_end['cost'])
+            print(Zone.m_hub)
+            hubs.sort(key=lambda x: x.name != Zone.m_hub)
             for hub in hubs:
                 print(f'-------- source zone name : {hub.name} ------------')
                 connected_target_zones = Connection.get_connections_from_source_point(hub.name)
-                target_zones_object = [Zone.get_zone_by_its_prop(connection.tuple_connections[1],'name') for connection in connected_target_zones if Zone.get_zone_by_its_prop(connection.tuple_connections[1],'name').shortest_path_from_current_hub_to_end and hub.name not in Zone.get_zone_by_its_prop(connection.tuple_connections[1],'name').shortest_path_from_current_hub_to_end['path']]
-                
-                target_zones_object.sort(key=lambda x:x.shortest_path_from_current_hub_to_end['cost'])
+                target_zones_object = get_target_zones_object(connected_target_zones,hub)
+                target_zones_object.sort(key=lambda x:x.shortest_path_from_current_hub_to_end['cost'] and x.metadata['zone'] == 'priority')
                 Zone.travel_to_other_hubs(hub,target_zones_object)
                 print('----------------------------------------------------')
                 
         with Display(pygame,config_data,min_x,min_y,dijkstra_output) as d:
             d.display_window(((max_x-min_y)*70)+100,((max_y-min_y)*70)+100)  
-        
-              
+
     except ParsingError as e:
         print(e)

@@ -2,7 +2,10 @@ class Zone:
     
     #for stock all zone object that i created
     l_zones = []
-    
+
+    #for marking the last hub that i pushed drones on it for the next turn
+    m_hub = None 
+    costs = {'normal':1,'restricted':2,'priority':1,'blocked':None}
     def __init__(self,name,type,coordinates,metadata):
         self.name = name
         self.type = type
@@ -25,11 +28,13 @@ class Zone:
     def travel_to_other_hubs(cls,source,target_zones):
         for target_zone in target_zones:
             for i in range(0,target_zone.metadata['max_drones']):
-                if source.l_drones:
+                if source.l_drones and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
                     popped_drone = source.l_drones.pop()
                     target_zone.l_drones.append(popped_drone)
+                    popped_drone.cost_counter += cls.costs[target_zone.metadata['zone']]
+                    # mark the last zone that my program move drone to it
+                    Zone.m_hub = target_zone.name
                     print(f"move drone with id {popped_drone.id} from {source.name} to {target_zone.name}")
-
     @classmethod 
     def set_shortest_path(cls,algo_object,end_point_name):
         for zone in cls.l_zones:
