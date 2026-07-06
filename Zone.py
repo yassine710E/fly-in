@@ -12,6 +12,7 @@ class Zone:
         self.coordinates = coordinates
         self.metadata = metadata
         self.l_drones =  []
+        self.current_cost = 1
         self.shortest_path_from_current_hub_to_end = None 
         Zone.l_zones.append(self)
 
@@ -31,10 +32,6 @@ class Zone:
                 if source.l_drones and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
                     popped_drone = source.l_drones.pop()
                     target_zone.l_drones.append(popped_drone)
-                    popped_drone.cost_counter += cls.costs[target_zone.metadata['zone']]
-                    # mark the last zone that my program move drone to it
-                    Zone.m_hub = target_zone.name
-                    print(f"move drone with id {popped_drone.id} from {source.name} to {target_zone.name}")
     @classmethod 
     def set_shortest_path(cls,algo_object,end_point_name):
         for zone in cls.l_zones:
