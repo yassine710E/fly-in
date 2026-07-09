@@ -13,7 +13,7 @@ def get_target_zones_object(target_connections, hub):
         zone = Zone.get_zone_by_its_prop(connection.tuple_connections[1], 'name')
         if zone.shortest_path_from_current_hub_to_end and hub.name not in zone.shortest_path_from_current_hub_to_end['path'] and zone.metadata['zone'] != 'blocked' and (len(zone.l_drones) < zone.metadata['max_drones'] or zone.type == "end_hub"):
             connected_target_zones.append(zone)
-    connected_target_zones.sort(key=lambda x: (x.metadata['zone'] == 'priority', x.shortest_path_from_current_hub_to_end['cost'],len(x.l_drones)))    
+    connected_target_zones.sort(key=lambda x: (x.metadata['zone'] != 'priority', x.shortest_path_from_current_hub_to_end['cost'],len(x.l_drones)))    
     return connected_target_zones
 
 if __name__ == "__main__":
@@ -66,19 +66,20 @@ if __name__ == "__main__":
                 initial_positions[drone.id] = z.name
         history.append(initial_positions)
         # --------------------------------------------
-        total_turns = 0
+        turn_counter = 0
         while len(l_drones_end) != len(l_drones):
             hubs = [hub for hub in Zone.l_zones if hub.l_drones and hub.type != 'end_hub']
             hubs.sort(key=lambda x: (x.shortest_path_from_current_hub_to_end['cost']))
             for hub in hubs:
-                if hub.current_cost == Zone.costs[hub.metadata['zone']]:
+                print(f'source name : {hub.name}')
+                if Zone.costs[hub.metadata['zone']] and hub.current_cost == Zone.costs[hub.metadata['zone']]:
                     connected_target_zones = Connection.get_connections_from_source_point(hub.name)
                     target_zones_object = get_target_zones_object(connected_target_zones, hub)
                     Zone.travel_to_other_hubs(hub, target_zones_object)
                     hub.current_cost = 1
-                elif hub.current_cost < Zone.costs[hub.metadata['zone']]:
+                elif Zone.costs[hub.metadata['zone']] and hub.current_cost < Zone.costs[hub.metadata['zone']]:
                     hub.current_cost += 1
-            
+            turn_counter += 1
             # --- NEW CODE: Snapshot positions at the end of this turn ---
             turn_positions = {}
             for z in Zone.l_zones:
@@ -86,7 +87,6 @@ if __name__ == "__main__":
                     turn_positions[drone.id] = z.name
             history.append(turn_positions)
             # --------------------------------------------
-                    
         # Pass history to the display window instead of dijkstra_output
         with Display(pygame, config_data, min_x, min_y, history) as d:
             d.display_window(((max_x - min_x) * 70) + 100, ((max_y - min_y) * 70) + 100)  

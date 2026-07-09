@@ -100,7 +100,7 @@ class Display:
             # --------------------------------------------
 
             self.pygame.display.flip()
-            clock.tick(100)
+            clock.tick(40)
 
     def draw_zones(self):
         for zone in self.config_data['zones']:
