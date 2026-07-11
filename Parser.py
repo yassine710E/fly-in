@@ -169,7 +169,6 @@ class Parser:
         
         # set metadata
         clear_value |= {'metadata': metadata}
-        print(clear_value)
 
         return clear_value
         

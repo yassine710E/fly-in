@@ -32,7 +32,7 @@ class Zone:
                 if source.l_drones and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
                     popped_drone = source.l_drones.pop()
                     target_zone.l_drones.append(popped_drone)
-                    print(f'move drone with id {popped_drone.id} from {source.name} to {target_zone.name}')
+                    popped_drone.updated_path.append(target_zone)
     @classmethod 
     def set_shortest_path(cls,algo_object,end_point_name):
         for zone in cls.l_zones:
