@@ -32,10 +32,11 @@ if __name__ == "__main__":
         end_zone = Zone.get_zone_by_its_prop('end_hub', 'type')
         
         # create drones list for controlling them
-        l_drones = [Drone(i,start_zone) for i in range(1, config_data['nb_drones'] + 1)]
+        for i in range(1, config_data['nb_drones'] + 1):
+            Drone(i)
 
         # and set all drones to start hub
-        start_zone.l_drones = l_drones[::1]
+        start_zone.l_drones = Drone.l_drones[::1]
         
         # put l_zone on class connections for search on single zone using its name (zone name is unique)
         for connection in config_data['connections']:
@@ -50,14 +51,25 @@ if __name__ == "__main__":
         dijkstra_output = obj.dijkstra(start_point, end_point)
         if dijkstra_output is None:
             raise ParsingError('no Path exist to end point')
-    
+
         Zone.set_shortest_path(obj, end_point)
         l_drones_end = end_zone.l_drones
         
-        turn_counter = 0
+
+        # --- NEW CODE: Track history of positions ---
+        # Store a snapshot of every drone's current zone name for each turn
+        history = []
         
-        
-        while len(l_drones_end) != len(l_drones):
+        # Save initial turn (Turn 0: Everyone at start)
+        initial_positions = {}
+        for z in Zone.l_zones:
+            for drone in z.l_drones:
+                initial_positions[drone.id] = z.name
+        history.append(initial_positions)
+        # --------------------------------------------
+
+        # while len(l_drones_end) != len(Drone.l_drones):
+        for i in range(0,200):
             hubs = [hub for hub in Zone.l_zones if hub.l_drones and hub.type != 'end_hub']
             hubs.sort(key=lambda x: (x.shortest_path_from_current_hub_to_end['cost']))
             for hub in hubs:
@@ -68,11 +80,16 @@ if __name__ == "__main__":
                     hub.current_cost = 1
                 elif Zone.costs[hub.metadata['zone']] and hub.current_cost < Zone.costs[hub.metadata['zone']]:
                     hub.current_cost += 1
-            turn_counter += 1
+            # --- NEW CODE: Snapshot positions at the end of this turn ---
+            turn_positions = {}
+            for z in Zone.l_zones:
+                for drone in z.l_drones:
+                    turn_positions[drone.id] = z.name
+            history.append(turn_positions)
+            # --------------------------------------------
         
         # Pass history to the display window instead of dijkstra_output
-        with Display(pygame, config_data) as d:
+        with Display(pygame,history) as d:
             d.display_window()  
-        print(turn_counter)
     except ParsingError as e:
         print(e)

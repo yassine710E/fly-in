@@ -11,27 +11,22 @@ class Algo:
         
     def create_graph(self):
         for connection in self.connections:
+            print(connection.tuple_connections)
             obj_start = Zone.get_zone_by_its_prop(connection.tuple_connections[0],'name')
             obj_target = Zone.get_zone_by_its_prop(connection.tuple_connections[1],'name')
             if obj_target.metadata['zone'] == 'priority':
                 self.priority_zones.add(obj_target.name)
-            if obj_start.metadata['zone'] == 'priority':
-                self.priority_zones.add(obj_start.name)
             if self.costs[obj_target.metadata['zone']]:
                 if self.graph.get(obj_start.name) is None:
                     self.graph[obj_start.name] = []
                 self.graph[obj_start.name].append((obj_target.name,self.costs[obj_target.metadata['zone']]))                   
-            if self.costs[obj_start.metadata['zone']]:
-                if self.graph.get(obj_target.name) is None:
-                    self.graph[obj_target.name] = []
-                self.graph[obj_target.name].append((obj_start.name,self.costs[obj_start.metadata['zone']]))    
+        print(self.graph) 
     
     def dijkstra(self,start_point,end_point):
         visited = []
         priority_queue = []
         dist_point_and_prev = {start_point : None}
         heapq.heappush(priority_queue,(0,start_point))
-        
         while priority_queue:
             if self.graph.get(priority_queue[0][1]) is None:
                 return None

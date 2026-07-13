@@ -1,0 +1,90 @@
+# CHALLENGER LEVEL: THE GRIDLOCK MEGALITH
+# Designed to test high-volume scheduling, path divergence, and extreme recombine bottlenecks.
+# Reference Target: <= 55 turns
+
+nb_drones: 60
+
+# === LAYER 0: The Mass Ingress ===
+start_hub: primary_staging 0 0 [color=green]
+
+hub: distributor_north 3 6 [color=blue max_drones=4]
+hub: distributor_center 3 0 [color=blue max_drones=2]
+hub: distributor_south 3 -6 [color=blue max_drones=4]
+
+# === LAYER 1: The Three High-Volume Highways ===
+
+# Highway A: The Fast, Low-Capacity Priority Spine (Top)
+hub: fast_spine_a1 7 8 [zone=priority color=gold max_drones=2]
+hub: fast_spine_a2 11 8 [zone=priority color=gold max_drones=2]
+hub: fast_spine_a3 15 8 [zone=priority color=gold max_drones=1]
+hub: fast_spine_a4 19 8 [zone=priority color=gold max_drones=2]
+
+# Highway B: The Slow, Massive Restricted Reservoir (Middle)
+hub: reservoir_b1 7 0 [zone=restricted color=brown max_drones=10]
+hub: reservoir_b2 11 0 [zone=restricted color=brown max_drones=10]
+hub: reservoir_b3 15 0 [zone=restricted color=brown max_drones=10]
+hub: reservoir_b4 19 0 [zone=restricted color=brown max_drones=10]
+
+# Highway C: The Interconnected Normal Grid (Bottom)
+hub: grid_c1 7 -8 [zone=normal color=gray max_drones=4]
+hub: grid_c2 11 -8 [zone=normal color=gray max_drones=4]
+hub: grid_c3 15 -8 [zone=normal color=gray max_drones=4]
+hub: grid_c4 19 -8 [zone=normal color=gray max_drones=4]
+
+# === LAYER 2: The Intra-Highway Exchange Web ===
+# Trap nodes that link highways together but penalize bad planning
+hub: trap_bridge_top 11 4 [zone=normal color=red max_drones=1]
+hub: trap_bridge_bot 11 -4 [zone=normal color=red max_drones=1]
+
+# === LAYER 3: The Squeeze & Final Delivery ===
+hub: convergence_zone_alpha 23 4 [color=purple max_drones=4]
+hub: convergence_zone_beta 23 -4 [color=purple max_drones=4]
+
+hub: bottleneck_choke_1 26 0 [color=red max_drones=2]
+hub: bottleneck_choke_2 28 0 [color=red max_drones=1]
+
+end_hub: terminal_vault 31 0 [color=rainbow]
+
+# === CONNECTIONS ===
+
+# Initial Ingress Routing
+connection: primary_staging-distributor_north [max_link_capacity=3]
+connection: primary_staging-distributor_center [max_link_capacity=1]
+connection: primary_staging-distributor_south [max_link_capacity=3]
+
+# Highway Links (Out of Distributors)
+connection: distributor_north-fast_spine_a1 [max_link_capacity=2]
+connection: distributor_center-reservoir_b1 [max_link_capacity=2]
+connection: distributor_south-grid_c1 [max_link_capacity=3]
+
+# Highway Sequential Pathways
+connection: fast_spine_a1-fast_spine_a2 [max_link_capacity=2]
+connection: fast_spine_a2-fast_spine_a3 [max_link_capacity=1]
+connection: fast_spine_a3-fast_spine_a4 [max_link_capacity=1]
+
+connection: reservoir_b1-reservoir_b2 [max_link_capacity=5]
+connection: reservoir_b2-reservoir_b3 [max_link_capacity=5]
+connection: reservoir_b3-reservoir_b4 [max_link_capacity=5]
+
+connection: grid_c1-grid_c2 [max_link_capacity=2]
+connection: grid_c2-grid_c3 [max_link_capacity=2]
+connection: grid_c3-grid_c4 [max_link_capacity=2]
+
+# Cross-Traffic Intersections (The Trap Bridges)
+connection: fast_spine_a2-trap_bridge_top [max_link_capacity=1]
+connection: trap_bridge_top-reservoir_b2 [max_link_capacity=1]
+
+connection: grid_c2-trap_bridge_bot [max_link_capacity=1]
+connection: trap_bridge_bot-reservoir_b2 [max_link_capacity=1]
+
+# Outflow into Convergence Zones
+connection: fast_spine_a4-convergence_zone_alpha [max_link_capacity=2]
+connection: reservoir_b4-convergence_zone_alpha [max_link_capacity=3]
+connection: reservoir_b4-convergence_zone_beta [max_link_capacity=3]
+connection: grid_c4-convergence_zone_beta [max_link_capacity=2]
+
+# Final Gauntlet Pipeline
+connection: convergence_zone_alpha-bottleneck_choke_1 [max_link_capacity=2]
+connection: convergence_zone_beta-bottleneck_choke_1 [max_link_capacity=2]
+connection: bottleneck_choke_1-bottleneck_choke_2 [max_link_capacity=1]
+connection: bottleneck_choke_2-terminal_vault [max_link_capacity=1]

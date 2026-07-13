@@ -1,0 +1,85 @@
+# CHALLENGER LEVEL: THE MATRIX LABYRINTH
+# An 80-drone massive coordinate mesh filled with alternating status penalties.
+# Reference Target: <= 65 turns
+
+nb_drones: 80
+
+# === DISPERSAL AND INPUT NODE ===
+start_hub: hive_mind 0 0 [color=green]
+
+# Matrix Column 1
+hub: node_1_1 3 4 [zone=priority color=gold max_drones=3]
+hub: node_1_2 3 2 [zone=normal color=blue max_drones=3]
+hub: node_1_3 3 -2 [zone=normal color=blue max_drones=3]
+hub: node_1_4 3 -4 [zone=priority color=gold max_drones=3]
+
+# Matrix Column 2 (The Wall Row)
+hub: node_2_1 7 4 [zone=blocked color=black]
+hub: node_2_2 7 2 [zone=restricted color=brown max_drones=4]
+hub: node_2_3 7 -2 [zone=restricted color=brown max_drones=4]
+hub: node_2_4 7 -4 [zone=blocked color=black]
+
+# Matrix Column 3 (The High Capacity Core)
+hub: node_3_1 11 5 [zone=normal color=blue max_drones=5]
+hub: node_3_2 11 2 [zone=priority color=gold max_drones=2]
+hub: node_3_3 11 -2 [zone=priority color=gold max_drones=2]
+hub: node_3_4 11 -5 [zone=normal color=blue max_drones=5]
+
+# Matrix Column 4 (The Inversion Filter)
+hub: node_4_1 15 3 [zone=restricted color=brown max_drones=2]
+hub: node_4_2 15 1 [zone=normal color=blue max_drones=2]
+hub: node_4_3 15 -1 [zone=normal color=blue max_drones=2]
+hub: node_4_4 15 -3 [zone=restricted color=brown max_drones=2]
+
+# Matrix Column 5 (The Choke Ingress)
+hub: node_5_1 19 2 [zone=priority color=gold max_drones=2]
+hub: node_5_2 19 -2 [zone=priority color=gold max_drones=2]
+
+# === THE SYSTEM EXTRACTION POINT ===
+hub: main_collector_pipe 23 0 [color=orange max_drones=4]
+hub: micro_valve 25 0 [color=red max_drones=1]
+end_hub: central_core 28 0 [color=rainbow]
+
+# === CONNECTIONS ===
+
+# Hive Dispersal
+connection: hive_mind-node_1_1 [max_link_capacity=4]
+connection: hive_mind-node_1_2 [max_link_capacity=4]
+connection: hive_mind-node_1_3 [max_link_capacity=4]
+connection: hive_mind-node_1_4 [max_link_capacity=4]
+
+# Column 1 to Column 2 (Circumventing the blocked nodes)
+connection: node_1_1-node_2_2 [max_link_capacity=2]
+connection: node_1_2-node_2_2 [max_link_capacity=2]
+connection: node_1_3-node_2_3 [max_link_capacity=2]
+connection: node_1_4-node_2_3 [max_link_capacity=2]
+
+# Column 2 to Column 3 (Expanding back out)
+connection: node_2_2-node_3_1 [max_link_capacity=2]
+connection: node_2_2-node_3_2 [max_link_capacity=2]
+connection: node_2_3-node_3_3 [max_link_capacity=2]
+connection: node_2_3-node_3_4 [max_link_capacity=2]
+
+# Column 3 Vertical Cross-Links (Enables swapping pathways dynamically)
+connection: node_3_1-node_3_2 [max_link_capacity=2]
+connection: node_3_2-node_3_3 [max_link_capacity=1]
+connection: node_3_3-node_3_4 [max_link_capacity=2]
+
+# Column 3 to Column 4
+connection: node_3_1-node_4_1 [max_link_capacity=3]
+connection: node_3_2-node_4_2 [max_link_capacity=1]
+connection: node_3_3-node_4_3 [max_link_capacity=1]
+connection: node_3_4-node_4_4 [max_link_capacity=3]
+
+# Column 4 to Column 5 (Funneling down)
+connection: node_4_1-node_5_1 [max_link_capacity=2]
+connection: node_4_2-node_5_1 [max_link_capacity=1]
+connection: node_4_3-node_5_2 [max_link_capacity=1]
+connection: node_4_4-node_5_2 [max_link_capacity=2]
+
+# Column 5 to Final Choke Infrastructure
+connection: node_5_1-main_collector_pipe [max_link_capacity=2]
+connection: node_5_2-main_collector_pipe [max_link_capacity=2]
+
+connection: main_collector_pipe-micro_valve [max_link_capacity=1]
+connection: micro_valve-central_core [max_link_capacity=1]

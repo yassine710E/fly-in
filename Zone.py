@@ -32,9 +32,23 @@ class Zone:
                 if source.l_drones and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
                     popped_drone = source.l_drones.pop()
                     target_zone.l_drones.append(popped_drone)
-                    popped_drone.updated_path.append(target_zone)
     @classmethod 
     def set_shortest_path(cls,algo_object,end_point_name):
         for zone in cls.l_zones:
             zone.shortest_path_from_current_hub_to_end = algo_object.dijkstra(zone.name,end_point_name)
-         
+    
+    @classmethod
+    def min_x(cls):
+        return min([zone.coordinates[0] for zone in cls.l_zones])
+
+    @classmethod
+    def min_y(cls):
+        return min([zone.coordinates[1] for zone in cls.l_zones])
+    
+    @classmethod
+    def max_x(cls):
+        return max([zone.coordinates[0] for zone in cls.l_zones])
+
+    @classmethod
+    def max_y(cls):
+        return max([zone.coordinates[1] for zone in cls.l_zones])
