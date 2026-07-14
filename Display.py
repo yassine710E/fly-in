@@ -115,7 +115,7 @@ class Display:
             screen.blit(text_surface, text_rect)
 
             self.pygame.display.flip()
-            clock.tick(100)
+            clock.tick(200)
     
     def draw_zones(self, screen, zoom_scale):
         for zone in Zone.l_zones:

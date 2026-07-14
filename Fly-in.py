@@ -9,11 +9,12 @@ from Drone import Drone
 
 def get_target_zones_object(target_connections, hub):
     connected_target_zones = []
+
     for connection in target_connections:
         zone = Zone.get_zone_by_its_prop(connection.tuple_connections[1], 'name')
-        if zone.shortest_path_from_current_hub_to_end and hub.name not in zone.shortest_path_from_current_hub_to_end['path'] and zone.metadata['zone'] != 'blocked' and (len(zone.l_drones) < zone.metadata['max_drones'] or zone.type == "end_hub"):
+        if zone.shortest_path_from_current_hub_to_end != None and zone.metadata['zone'] != 'blocked' and (len(zone.l_drones) < zone.metadata['max_drones'] or zone.type == "end_hub"):
             connected_target_zones.append(zone)
-    connected_target_zones.sort(key=lambda x: (x.metadata['zone'] != 'priority', x.shortest_path_from_current_hub_to_end['cost'],len(x.l_drones)))    
+    connected_target_zones.sort(key=lambda x: (x.metadata['zone'] != 'priority', x.shortest_path_from_current_hub_to_end,len(x.l_drones)))    
     return connected_target_zones
 
 if __name__ == "__main__":
@@ -51,7 +52,6 @@ if __name__ == "__main__":
         dijkstra_output = obj.dijkstra(start_point, end_point)
         if dijkstra_output is None:
             raise ParsingError('no Path exist to end point')
-
         Zone.set_shortest_path(obj, end_point)
         l_drones_end = end_zone.l_drones
         
@@ -67,19 +67,21 @@ if __name__ == "__main__":
                 initial_positions[drone.id] = z.name
         history.append(initial_positions)
         # --------------------------------------------
-
-        # while len(l_drones_end) != len(Drone.l_drones):
-        for i in range(0,200):
+        turn_counter = 0
+        while len(l_drones_end) != len(Drone.l_drones):
             hubs = [hub for hub in Zone.l_zones if hub.l_drones and hub.type != 'end_hub']
-            hubs.sort(key=lambda x: (x.shortest_path_from_current_hub_to_end['cost']))
+            hubs.sort(key=lambda x: (x.shortest_path_from_current_hub_to_end))
+            l = []
             for hub in hubs:
                 if Zone.costs[hub.metadata['zone']] and hub.current_cost == Zone.costs[hub.metadata['zone']]:
                     connected_target_zones = Connection.get_connections_from_source_point(hub.name)
                     target_zones_object = get_target_zones_object(connected_target_zones, hub)
-                    Zone.travel_to_other_hubs(hub, target_zones_object)
+                    Zone.travel_to_other_hubs(hub, target_zones_object,l)
                     hub.current_cost = 1
                 elif Zone.costs[hub.metadata['zone']] and hub.current_cost < Zone.costs[hub.metadata['zone']]:
                     hub.current_cost += 1
+            turn_counter += 1
+            print(f'--------------{turn_counter}------------------')
             # --- NEW CODE: Snapshot positions at the end of this turn ---
             turn_positions = {}
             for z in Zone.l_zones:
@@ -87,8 +89,9 @@ if __name__ == "__main__":
                     turn_positions[drone.id] = z.name
             history.append(turn_positions)
             # --------------------------------------------
-        
         # Pass history to the display window instead of dijkstra_output
+        # for l in history:
+        #     print(l)        
         with Display(pygame,history) as d:
             d.display_window()  
     except ParsingError as e:

@@ -2,6 +2,7 @@ class Zone:
     
     #for stock all zone object that i created
     l_zones = []
+    path = []
 
     #for marking the last hub that i pushed drones on it for the next turn
     m_hub = None 
@@ -26,12 +27,17 @@ class Zone:
     
     #pop drones in instance in push them in other
     @classmethod
-    def travel_to_other_hubs(cls,source,target_zones):
+    def travel_to_other_hubs(cls,source,target_zones,l):
         for target_zone in target_zones:
+            print(f'------------{source.name}-------------')
             for i in range(0,target_zone.metadata['max_drones']):
-                if source.l_drones and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
+                if source.l_drones  and source.l_drones[-1].id not in l and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
                     popped_drone = source.l_drones.pop()
                     target_zone.l_drones.append(popped_drone)
+                    print(l)
+                    print(f'Drone {target_zone.l_drones[-1].id} moved from {source.name} to {target_zone.name}')
+                    l.append(popped_drone.id)
+
     @classmethod 
     def set_shortest_path(cls,algo_object,end_point_name):
         for zone in cls.l_zones:
