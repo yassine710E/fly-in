@@ -166,6 +166,7 @@ class Parser:
 
         if len(connections_and_metadata) == 2:
             metadata = dict(re.findall(r"\[\s*(max_link_capacity)\s*=\s*([1-9]\d*)\s*\]",connections_and_metadata[1]))
+            metadata['max_link_capacity'] = int(metadata['max_link_capacity'])
         
         # set metadata
         clear_value |= {'metadata': metadata}
