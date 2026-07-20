@@ -49,18 +49,10 @@ if __name__ == "__main__":
         
 
         history = main_simulation(l_drones_end)
-        prev = None
-        for curr_item in history:
-            for id,hub in curr_item.items():
-                if prev and prev.get(id) and  curr_item[id] != prev[id] and Zone.get_zone_by_its_prop(curr_item[id],'name').metadata['zone'] == 'restricted':
-                    print(f'D{id}-{prev[id]}-{curr_item[id]}',end=' ')
-                else:
-                    print(f'D{id}-{curr_item[id]}',end=' ')
-            print()
-            prev = curr_item
+        
         # Pass history to the display window instead of dijkstra_output
         with Display(pygame,history) as d:
             d.display_window()  
     
-    except (ParsingError) as e:
+    except (BaseException,ParsingError) as e:
         print(e)

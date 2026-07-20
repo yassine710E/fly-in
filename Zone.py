@@ -34,8 +34,14 @@ class Zone:
             limit = target_zone.metadata['max_drones'] if connection.metadata['max_link_capacity'] == target_zone.metadata['max_drones'] else 1
             for i in range(0,limit):
                 if source.l_drones and source.name not in target_zone.path   and (len(target_zone.l_drones) < target_zone.metadata['max_drones'] or target_zone.type == "end_hub"):
+                    source.l_drones.sort(key=lambda x:(x.id))
                     popped_drone = source.l_drones.pop()
                     target_zone.l_drones.append(popped_drone)
+                    if target_zone.metadata['zone'] != 'restricted':
+                        print(f'D{popped_drone.id}-{target_zone.name}',end=' ')
+                    else:
+                        print(f'D{popped_drone.id}-{source.name}-{target_zone.name}',end=' ')
+
 
     @classmethod 
     def set_shortest_path(cls,algo_object,end_point_name):

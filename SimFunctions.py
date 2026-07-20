@@ -14,13 +14,11 @@ def get_target_zones_object(target_connections):
 
 def main_simulation(l_drones_end):
         history = []
-        
         initial_positions = {}
         for z in Zone.l_zones:
             for drone in z.l_drones:
                 initial_positions[drone.id] = z.name
         history.append(initial_positions)
-
         turn_counter = 0
         while len(l_drones_end) != len(Drone.l_drones):
             hubs = [hub for hub in Zone.l_zones if hub.l_drones and hub.type != 'end_hub']
@@ -32,8 +30,10 @@ def main_simulation(l_drones_end):
                     Zone.travel_to_other_hubs(hub, target_zones_object,hub)
                     hub.current_cost = 1
                 elif Zone.costs[hub.metadata['zone']] and hub.current_cost < Zone.costs[hub.metadata['zone']]:
+                    print(f'D{hub.l_drones[-1].id}-{hub.name}',end=" ")
                     hub.current_cost += 1
             turn_counter += 1
+            print()
             turn_positions = {}
             for z in Zone.l_zones:
                 for drone in z.l_drones:
