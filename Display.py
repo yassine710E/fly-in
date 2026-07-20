@@ -1,6 +1,5 @@
 from Zone import Zone
 from Connection import Connection
-from Drone import Drone
 
 
 class Display:
@@ -60,14 +59,17 @@ class Display:
         self.offset_y = (screen_height - map_px_h) / 2
 
     def zone_to_screen(self, grid_x, grid_y, effective_scale):
-        x = self.offset_x + ((grid_x - Zone.min_x()) * 50 + 25) * effective_scale
-        y = self.offset_y + ((grid_y - Zone.min_y()) * 50 + 25) * effective_scale
+        x = self.offset_x + ((grid_x - Zone.min_x()) *
+                             50 + 25) * effective_scale
+        y = self.offset_y + ((grid_y - Zone.min_y()) *
+                             50 + 25) * effective_scale
         return x, y
 
     def _refresh_zone_coords(self, effective_scale):
         for zone in Zone.l_zones:
             gx, gy = zone.coordinates[0], zone.coordinates[1]
-            self.zone_coords[zone.name] = self.zone_to_screen(gx, gy, effective_scale)
+            self.zone_coords[zone.name] = self.zone_to_screen(
+                gx, gy, effective_scale)
 
     # ------------------------------------------------------------------
     # Main loop
@@ -83,7 +85,8 @@ class Display:
         bg_image = self.pygame.transform.scale(bg_image, (width, height))
 
         try:
-            base_drone_image = self.pygame.image.load('surfaces/drone.png').convert_alpha()
+            base_drone_image = self.pygame.image.load(
+                'surfaces/drone.png').convert_alpha()
         except Exception:
             base_drone_image = None
 
@@ -116,7 +119,8 @@ class Display:
 
             # 3) Recompute the centered transform for this frame's scale
             self._update_transform(width, height, zoom_scale)
-            # 4) Refresh zone screen-coords ONCE, everything else reads from here
+            # 4) Refresh zone screen-coords ONCE, everything
+            # else reads from here
             self._refresh_zone_coords(zoom_scale)
 
             # Connections drawn first (under the zone circles), using the
@@ -135,11 +139,13 @@ class Display:
                 progress = 1.0
 
             current_positions = self.history[current_turn_idx]
-            next_positions = self.history[min(current_turn_idx + 1, total_turns)]
+            next_positions = self.history[min(
+                current_turn_idx + 1, total_turns)]
 
             drone_size = max(4, int(30 * zoom_scale))
             if base_drone_image:
-                drone_image = self.pygame.transform.scale(base_drone_image, (drone_size, drone_size))
+                drone_image = self.pygame.transform.scale(
+                    base_drone_image, (drone_size, drone_size))
             else:
                 drone_image = None
 
@@ -155,7 +161,8 @@ class Display:
                 animated_y = start_py + (target_py - start_py) * progress
 
                 if drone_image:
-                    screen.blit(drone_image, (animated_x - drone_size // 2, animated_y - drone_size // 2))
+                    screen.blit(drone_image, (animated_x -
+                                drone_size // 2, animated_y - drone_size // 2))
                 else:
                     self.pygame.draw.circle(
                         screen,
@@ -167,7 +174,8 @@ class Display:
             turn_text = f"Turn: {current_turn_idx} / {total_turns}"
             text_surface = font.render(turn_text, True, (255, 255, 255))
             text_rect = text_surface.get_rect(topleft=(10, 10))
-            self.pygame.draw.rect(screen, (0, 0, 0, 180), text_rect.inflate(10, 6))
+            self.pygame.draw.rect(screen, (0, 0, 0, 180),
+                                  text_rect.inflate(10, 6))
             screen.blit(text_surface, text_rect)
 
             self.pygame.display.flip()
@@ -186,7 +194,9 @@ class Display:
             )
             border_color = self.pygame.color.THECOLORS['white']
             border_thickness = max(1, int(2 * zoom_scale))
-            self.pygame.draw.circle(screen, border_color, (x, y), 20 * zoom_scale, width=border_thickness)
+            self.pygame.draw.circle(
+                screen, border_color,
+                (x, y), 20 * zoom_scale, width=border_thickness)
 
     def draw_connections(self, screen, zoom_scale):
         for connection in Connection.l_connections:
@@ -196,4 +206,6 @@ class Display:
             x_1, y_1 = self.zone_coords[zone1_name]
             x_2, y_2 = self.zone_coords[zone2_name]
 
-            self.pygame.draw.line(screen, 'white', (x_1, y_1), (x_2, y_2), max(1, int(2 * zoom_scale)))
+            self.pygame.draw.line(
+                screen, 'white', (x_1, y_1),
+                (x_2, y_2), max(1, int(2 * zoom_scale)))
