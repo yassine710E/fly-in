@@ -4,6 +4,14 @@ from typing import Any
 
 
 def is_int(string: str) -> bool:
+    """Check if a string can be successfully converted to an integer.
+
+    Args:
+        string (str): String value to test.
+
+    Returns:
+        bool: True if string is a valid integer, False otherwise.
+    """
     try:
         int(string)
         return True
@@ -12,6 +20,14 @@ def is_int(string: str) -> bool:
 
 
 def get_duplicated_prop(l_props: list[str]) -> str | None:
+    """Find the first duplicate property name in a list of string properties.
+
+    Args:
+        l_props (list[str]): List of property strings to evaluate.
+
+    Returns:
+        str | None: The duplicated property string if found, otherwise None.
+    """
     seen = set()
     for prop in l_props:
         if prop in seen:
@@ -26,17 +42,45 @@ def raise_for_order_prop(
         index_checker: int,
         prop: str,
         index: int) -> None:
+    """Validate property ordering sequentially and raise error if broken.
+
+    Args:
+        order (int): Current sequential group section order index.
+        index_checker (int): Expected target checker index for property.
+        prop (str): Property key name being validated.
+        index (int): Line index in the file for error reporting.
+
+    Raises:
+        ParsingError: If property appears out of expected sequence.
+    """
     if order > index_checker:
         raise ParsingError(
             f'prop "\033[4m{prop}\033[0m" is not ordered in line {index+1}')
 
 
 class ParsingError(Exception):
+    """Custom exception class representing error occurrences during parsing."""
+
     pass
 
 
 class Parser:
+    """Parser class for loading and validating configuration file content.
+
+    Attributes:
+        file_name (str): Path to target configuration file.
+        metadata (dict): Valid metadata schema choices for validation.
+        config_data (dict): Resulting parsed data structure.
+        prop_flags (dict): Tracks occurrences of mandatory property keys.
+        content (list[str]): File lines loaded from file_name.
+    """
+
     def __init__(self, file_name: str) -> None:
+        """Initialize Parser instance with file path and default schema state.
+
+        Args:
+            file_name (str): Configuration file path to parse.
+        """
         self.file_name = file_name
         self.metadata = {
             'color': list(getattr(pygame.color, 'THECOLORS').keys()),
@@ -52,6 +96,11 @@ class Parser:
                            'end_hub': False, 'hub': False, 'connection': False}
 
     def set_content(self) -> None:
+        """Read lines from configuration file into memory.
+
+        Raises:
+            ParsingError: If file operations or system permissions fail.
+        """
         try:
             with open(self.file_name, 'r') as file:
                 self.content = file.readlines()
@@ -68,6 +117,14 @@ class Parser:
             raise ParsingError(f"System I/O failure occurred: {error}")
 
     def check_nb_drones(self, line: str) -> dict:
+        """Parse and validate line declaring drone count property.
+
+        Args:
+            line (str): Raw string line from file.
+
+        Returns:
+            dict: Dict containing parsed 'nb_drones' or 'error' message.
+        """
         splited_line: list[str] = line.split(':')
         if len(splited_line) != 2:
             return {'error': 'key and value not exist'}
@@ -80,6 +137,14 @@ class Parser:
         return {'nb_drones': int(val)}
 
     def check_hubs(self, line: str) -> dict:
+        """Parse and validate line declaring hub, start_hub, or end_hub.
+
+        Args:
+            line (str): Raw string line from file.
+
+        Returns:
+            dict: Dict containing hub data properties or 'error' message.
+        """
         splited_line: list[str] = line.split(':')
         correct_value = dict()
         if len(splited_line) != 2:
@@ -169,6 +234,14 @@ class Parser:
         return correct_value
 
     def check_connection(self, line: str) -> dict:
+        """Parse and validate connection lines linking two hubs.
+
+        Args:
+            line (str): Raw string line from file.
+
+        Returns:
+            dict: Parsed tuple connection data and metadata or error dict.
+        """
         splited_line: list[str] = line.split(':')
         if len(splited_line) != 2:
             return {'error': 'line doesn\'t respect this pattern '
@@ -225,6 +298,14 @@ class Parser:
         return clear_value
 
     def parsing(self) -> dict:
+        """Parse configuration content and validate format structure.
+
+        Returns:
+            dict: Dictionary containing parsed configuration options.
+
+        Raises:
+            ParsingError: If file formatting or sequential ordering fails.
+        """
         self.set_content()
         if not self.content:
             raise ParsingError("Error: No Content In The File")
@@ -271,6 +352,9 @@ class Parser:
                     order += 1
                     flag_connection = True
                 raise_for_order_prop(order, index_checker, prop, index)
+            else:
+                raise ParsingError(
+                    f'invalid prop "\033[4m{prop}\033[0m" in line {index+1}')
             checker_returned_value = checkers_list[index_checker](line)
             if 'error' in checker_returned_value:
                 raise ParsingError(

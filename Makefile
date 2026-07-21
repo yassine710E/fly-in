@@ -1,7 +1,7 @@
-install : 
+install :
 	pip install -r requirements.txt
 
-run : install
+run : 
 	python3 Fly-in.py $(SRC)
 
 clean :
@@ -16,4 +16,3 @@ lint:
 		--ignore-missing-imports \
 		--disallow-untyped-defs \
 		--check-untyped-defs
-.PHONY : install

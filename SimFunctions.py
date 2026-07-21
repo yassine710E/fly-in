@@ -5,6 +5,16 @@ from Connection import Connection
 
 def get_target_zones_object(
         target_connections: list['Connection']) -> list['Zone']:
+    """Filter and sort eligible target zones based on capacity and path cost.
+
+    Args:
+        target_connections (list[Connection]): List of candidate outbound
+            connection objects from the source hub.
+
+    Returns:
+        list[Zone]: Sorted list of valid destination Zone objects prioritized
+            by priority status, path cost to the end hub, and drone load.
+    """
     connected_target_zones = []
 
     for connection in target_connections:
@@ -23,6 +33,16 @@ def get_target_zones_object(
 
 
 def main_simulation(l_drones_end: list['Drone']) -> list[dict]:
+    """Execute the multi-turn drone movement simulation until all reach end.
+
+    Args:
+        l_drones_end (list[Drone]): List tracking drones that have arrived
+            at the designated end hub.
+
+    Returns:
+        list[dict]: Historical record mapping drone IDs to zone names for
+            each turn in the simulation.
+    """
     history = []
     initial_positions = {}
     for z in Zone.l_zones:
@@ -32,6 +52,14 @@ def main_simulation(l_drones_end: list['Drone']) -> list[dict]:
     turn_counter = 0
 
     def lambda_func_sort(hub: Zone) -> bool | int:
+        """Extract the path cost sorting key for a given hub.
+
+        Args:
+            hub (Zone): The zone object to evaluate.
+
+        Returns:
+            bool | int: Integer distance to end hub, or False if unreachable.
+        """
         cost: int | None = hub.shortest_path_from_current_hub_to_end
         if cost is None:
             return False

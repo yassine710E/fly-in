@@ -5,7 +5,24 @@ import pygame
 
 
 class Display:
+    """Handles rendering of zones, connections, and animated drones in Pygame.
+
+    Attributes:
+        pygame (types.ModuleType): The Pygame module reference.
+        history (list): Historical timeline of drone positions across turns.
+        zone_coords (dict): Screen coordinates computed for each zone name.
+        DRONE_RADIUS (int): Fallback circle radius when drone image is missing.
+        offset_x (float): Horizontal screen centering offset.
+        offset_y (float): Vertical screen centering offset.
+    """
+
     def __init__(self, pygame: types.ModuleType, history: list):
+        """Initialize Display instance attributes.
+
+        Args:
+            pygame (types.ModuleType): Pygame library module instance.
+            history (list): Log of drone position states per turn.
+        """
         self.pygame = pygame
         self.history = history
         self.zone_coords: dict = {}
@@ -14,11 +31,23 @@ class Display:
         self.offset_y: float = 0
 
     def __enter__(self) -> 'Display':
+        """Context manager entry point initializing Pygame and fonts.
+
+        Returns:
+            Display: The initialized Display instance.
+        """
         self.pygame.init()
         self.pygame.font.init()
         return self
 
     def __exit__(self, exc_type: None, exc_val: None, exc_tb: None) -> None:
+        """Context manager exit point releasing Pygame resources.
+
+        Args:
+            exc_type (None): Exception type if raised.
+            exc_val (None): Exception value if raised.
+            exc_tb (None): Exception traceback if raised.
+        """
         self.pygame.quit()
 
     # ------------------------------------------------------------------
@@ -27,13 +56,20 @@ class Display:
     def _compute_fit_scale(self, screen_width: int,
                            screen_height: int,
                            margin: int = 50) -> float:
-        """
-        Base scale that makes the map fill the available window space,
+        """Base scale that makes the map fill the available window space,
         regardless of how sparse/dense the grid is. A small/easy map
         (few zones close together) gets a LARGER base scale so it still
         stretches to fill the screen -> zones spread out, connections
         end up longer. A big/dense map gets a smaller base scale so it
         still fits. Independent from the user's manual zoom.
+
+        Args:
+            screen_width (int): Current window width in pixels.
+            screen_height (int): Current window height in pixels.
+            margin (int): Surrounding outer padding margin.
+
+        Returns:
+            float: Scale multiplier fitting map within window boundaries.
         """
         map_grid_w = Zone.max_x() - Zone.min_x() + 1
         map_grid_h = Zone.max_y() - Zone.min_y() + 1
@@ -49,11 +85,15 @@ class Display:
     def _update_transform(self, screen_width: int,
                           screen_height: int,
                           effective_scale: float) -> None:
-        """
-        Recompute the offset needed to keep the whole map centered in the
+        """Recompute the offset needed to keep the whole map centered in the
         window, given the final effective_scale (fit_scale * user_zoom).
         Every drawing routine (zones, connections, drones) must go through
         zone_to_screen() so they always agree on where things are.
+
+        Args:
+            screen_width (int): Window width in pixels.
+            screen_height (int): Window height in pixels.
+            effective_scale (float): Scale resulting from fit and user zoom.
         """
         map_grid_w = Zone.max_x() - Zone.min_x() + 1
         map_grid_h = Zone.max_y() - Zone.min_y() + 1
@@ -67,6 +107,16 @@ class Display:
     def zone_to_screen(self, grid_x: int,
                        grid_y: int,
                        effective_scale: float) -> tuple:
+        """Convert grid coordinates to screen pixel coordinates.
+
+        Args:
+            grid_x (int): Horizontal grid coordinate.
+            grid_y (int): Vertical grid coordinate.
+            effective_scale (float): Current effective scaling factor.
+
+        Returns:
+            tuple: Transformed (x, y) screen position tuple.
+        """
         x = self.offset_x + ((grid_x - Zone.min_x()) *
                              50 + 25) * effective_scale
         y = self.offset_y + ((grid_y - Zone.min_y()) *
@@ -74,6 +124,11 @@ class Display:
         return x, y
 
     def _refresh_zone_coords(self, effective_scale: float) -> None:
+        """Update cached screen positions for all existing zones.
+
+        Args:
+            effective_scale (float): Current effective scaling factor.
+        """
         for zone in Zone.l_zones:
             gx, gy = zone.coordinates[0], zone.coordinates[1]
             self.zone_coords[zone.name] = self.zone_to_screen(
@@ -83,6 +138,7 @@ class Display:
     # Main loop
     # ------------------------------------------------------------------
     def display_window(self) -> None:
+        """Run Pygame main loop rendering zones, connections, and drones."""
         width = 1800
         height = 900
         font = self.pygame.font.SysFont('Arial', 18, bold=True)
@@ -193,6 +249,12 @@ class Display:
     # Drawing
     # ------------------------------------------------------------------
     def draw_zones(self, screen: pygame.Surface, zoom_scale: float) -> None:
+        """Render all zone circles and borders onto the target screen.
+
+        Args:
+            screen (pygame.Surface): Surface to render zones onto.
+            zoom_scale (float): Current effective zoom factor.
+        """
         for zone in Zone.l_zones:
             x, y = self.zone_coords[zone.name]
 
@@ -208,6 +270,12 @@ class Display:
 
     def draw_connections(self, screen: pygame.Surface,
                          zoom_scale: float) -> None:
+        """Render connection lines between zones onto the target screen.
+
+        Args:
+            screen (pygame.Surface): Surface to render connections onto.
+            zoom_scale (float): Current effective zoom factor.
+        """
         for connection in Connection.l_connections:
             zone1_name = connection.tuple_connections[0]
             zone2_name = connection.tuple_connections[1]
