@@ -1,28 +1,32 @@
 from Zone import Zone
 from Connection import Connection
+import types
+import pygame
 
 
 class Display:
-    def __init__(self, pygame, history):
+    def __init__(self, pygame: types.ModuleType, history: list):
         self.pygame = pygame
         self.history = history
-        self.zone_coords = {}
+        self.zone_coords: dict = {}
         self.DRONE_RADIUS = 15  # Fallback radius when drone.png is missing
-        self.offset_x = 0
-        self.offset_y = 0
+        self.offset_x: float = 0
+        self.offset_y: float = 0
 
-    def __enter__(self):
+    def __enter__(self) -> 'Display':
         self.pygame.init()
         self.pygame.font.init()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: None, exc_val: None, exc_tb: None) -> None:
         self.pygame.quit()
 
     # ------------------------------------------------------------------
     # Coordinate system
     # ------------------------------------------------------------------
-    def _compute_fit_scale(self, screen_width, screen_height, margin=50):
+    def _compute_fit_scale(self, screen_width: int,
+                           screen_height: int,
+                           margin: int = 50) -> float:
         """
         Base scale that makes the map fill the available window space,
         regardless of how sparse/dense the grid is. A small/easy map
@@ -42,7 +46,9 @@ class Display:
 
         return min(available_w / map_px_w_at_1, available_h / map_px_h_at_1)
 
-    def _update_transform(self, screen_width, screen_height, effective_scale):
+    def _update_transform(self, screen_width: int,
+                          screen_height: int,
+                          effective_scale: float) -> None:
         """
         Recompute the offset needed to keep the whole map centered in the
         window, given the final effective_scale (fit_scale * user_zoom).
@@ -58,14 +64,16 @@ class Display:
         self.offset_x = (screen_width - map_px_w) / 2
         self.offset_y = (screen_height - map_px_h) / 2
 
-    def zone_to_screen(self, grid_x, grid_y, effective_scale):
+    def zone_to_screen(self, grid_x: int,
+                       grid_y: int,
+                       effective_scale: float) -> tuple:
         x = self.offset_x + ((grid_x - Zone.min_x()) *
                              50 + 25) * effective_scale
         y = self.offset_y + ((grid_y - Zone.min_y()) *
                              50 + 25) * effective_scale
         return x, y
 
-    def _refresh_zone_coords(self, effective_scale):
+    def _refresh_zone_coords(self, effective_scale: float) -> None:
         for zone in Zone.l_zones:
             gx, gy = zone.coordinates[0], zone.coordinates[1]
             self.zone_coords[zone.name] = self.zone_to_screen(
@@ -74,7 +82,7 @@ class Display:
     # ------------------------------------------------------------------
     # Main loop
     # ------------------------------------------------------------------
-    def display_window(self):
+    def display_window(self) -> None:
         width = 1800
         height = 900
         font = self.pygame.font.SysFont('Arial', 18, bold=True)
@@ -184,7 +192,7 @@ class Display:
     # ------------------------------------------------------------------
     # Drawing
     # ------------------------------------------------------------------
-    def draw_zones(self, screen, zoom_scale):
+    def draw_zones(self, screen: pygame.Surface, zoom_scale: float) -> None:
         for zone in Zone.l_zones:
             x, y = self.zone_coords[zone.name]
 
@@ -198,7 +206,8 @@ class Display:
                 screen, border_color,
                 (x, y), 20 * zoom_scale, width=border_thickness)
 
-    def draw_connections(self, screen, zoom_scale):
+    def draw_connections(self, screen: pygame.Surface,
+                         zoom_scale: float) -> None:
         for connection in Connection.l_connections:
             zone1_name = connection.tuple_connections[0]
             zone2_name = connection.tuple_connections[1]

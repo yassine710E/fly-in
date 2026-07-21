@@ -1,29 +1,36 @@
+from __future__ import annotations
 from Connection import Connection
+from Algo import Algo
 
 
 class Zone:
 
     # for stock all zone object that i created
-    l_zones: list = []
+    l_zones: list['Zone'] = []
 
     # for marking the last hub that i pushed drones on it for the next turn
     m_hub = None
     costs = {'normal': 1, 'restricted': 2, 'priority': 1, 'blocked': None}
 
-    def __init__(self, name, type, coordinates, metadata):
+    def __init__(
+        self,
+            name: str,
+            type: str,
+            coordinates: tuple[int, int],
+            metadata: dict):
         self.name = name
         self.type = type
         self.coordinates = coordinates
         self.metadata = metadata
-        self.l_drones = []
-        self.current_cost = 1
-        self.shortest_path_from_current_hub_to_end = None
-        self.path = None
+        self.l_drones: list = []
+        self.current_cost: int = 1
+        self.shortest_path_from_current_hub_to_end: int | None = None
+        self.path: list[str] = []
         Zone.l_zones.append(self)
 
     # get zone by its zone because zone name is unique
     @classmethod
-    def get_zone_by_its_prop(cls, string: str, prop: str):
+    def get_zone_by_its_prop(cls, string: str, prop: str) -> 'Zone' | None:
         for zone in cls.l_zones:
             if ((prop == "name" and zone.name == string)
                     or (prop == "type" and zone.type == string)):
@@ -32,9 +39,12 @@ class Zone:
 
     # pop drones in instance in push them in other
     @classmethod
-    def travel_to_other_hubs(cls, source, target_zones, hub):
+    def travel_to_other_hubs(cls,
+                             source: 'Zone',
+                             target_zones: list['Zone']) -> None:
         for target_zone in target_zones:
-            connection = Connection.get_connection(hub.name, target_zone.name)
+            connection = Connection.get_connection(
+                source.name, target_zone.name)
             limit = target_zone.metadata['max_drones'] if connection.metadata[
                 'max_link_capacity'] == target_zone.metadata[
                     'max_drones'] else 1
@@ -55,7 +65,9 @@ class Zone:
                             f'{target_zone.name}', end=' ')
 
     @classmethod
-    def set_shortest_path(cls, algo_object, end_point_name):
+    def set_shortest_path(cls,
+                          algo_object: 'Algo',
+                          end_point_name: str) -> None:
         for zone in cls.l_zones:
             zone.shortest_path_from_current_hub_to_end = algo_object.dijkstra(
                 zone.name, end_point_name)
@@ -63,17 +75,21 @@ class Zone:
                 zone.path = algo_object.path
 
     @classmethod
-    def min_x(cls):
-        return min([zone.coordinates[0] for zone in cls.l_zones])
+    def min_x(cls) -> int:
+        m: int = min([zone.coordinates[0] for zone in cls.l_zones])
+        return m
 
     @classmethod
-    def min_y(cls):
-        return min([zone.coordinates[1] for zone in cls.l_zones])
+    def min_y(cls) -> int:
+        m: int = min([zone.coordinates[1] for zone in cls.l_zones])
+        return m
 
     @classmethod
-    def max_x(cls):
-        return max([zone.coordinates[0] for zone in cls.l_zones])
+    def max_x(cls) -> int:
+        m: int = max([zone.coordinates[0] for zone in cls.l_zones])
+        return m
 
     @classmethod
-    def max_y(cls):
-        return max([zone.coordinates[1] for zone in cls.l_zones])
+    def max_y(cls) -> int:
+        m: int = max([zone.coordinates[1] for zone in cls.l_zones])
+        return m

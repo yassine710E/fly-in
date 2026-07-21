@@ -1,33 +1,39 @@
+from __future__ import annotations
 import heapq
-from Zone import Zone
+from Connection import Connection
 
 
 class Algo:
-    def __init__(self, connections):
+    def __init__(self, connections: list['Connection']) -> None:
+        from Zone import Zone
         self.connections = connections
         self.costs = {'normal': 1, 'restricted': 2,
                       'priority': 1, 'blocked': None}
-        self.graph = dict()
+        self.graph: dict = dict()
         for zone in Zone.l_zones:
             self.graph[zone.name] = []
         self.create_graph()
-        self.path = None
+        self.path: list[str] = []
 
-    def create_graph(self):
+    def create_graph(self) -> None:
+        from Zone import Zone
         for connection in self.connections:
             obj_start = Zone.get_zone_by_its_prop(
                 connection.tuple_connections[0], 'name')
             obj_target = Zone.get_zone_by_its_prop(
                 connection.tuple_connections[1], 'name')
-            if self.costs[obj_target.metadata['zone']]:
+            if (isinstance(obj_target, Zone)
+                and isinstance(obj_start, Zone)
+                    and self.costs[obj_target.metadata['zone']]):
                 self.graph[obj_start.name].append(
                     (obj_target.name, self.costs[obj_target.metadata['zone']]))
 
-    def dijkstra(self, start_point, end_point):
-        priority_queue = []
-        visited = []
-        path = []
-        dict_curr_and_prev = dict()
+    def dijkstra(self, start_point: str, end_point: str) -> int | None:
+        from Zone import Zone
+        priority_queue: list[tuple] = []
+        visited: list[str] = []
+        path: list[str] = []
+        dict_curr_and_prev: dict = dict()
         dict_curr_and_prev[start_point] = None
         heapq.heappush(priority_queue, (0, start_point))
         while priority_queue:
@@ -46,13 +52,16 @@ class Algo:
                         ]
                 else:
                     heapq.heappush(priority_queue, connection)
-                    priority_queue.sort(key=lambda x: (
-                        x[0],
-                        Zone.get_zone_by_its_prop(
-                            x[1], 'name').metadata['zone']
-                        != 'priority'))
+
+                    def func_priority_sort(
+                            item: tuple[int, str]) -> bool | tuple:
+                        zone = Zone.get_zone_by_its_prop(item[1], 'name')
+                        if zone is None:
+                            return False
+                        return (item[0], zone.metadata['zone'] != 'priority')
+                    priority_queue.sort(key=func_priority_sort)
                     dict_curr_and_prev[connection[1]] = priority_queue[0][1]
-            popped_val = heapq.heappop(priority_queue)
+            popped_val: tuple[int, str] = heapq.heappop(priority_queue)
             visited.append(popped_val[1])
             if popped_val[1] == end_point:
                 key = end_point

@@ -3,13 +3,15 @@ from Drone import Drone
 from Connection import Connection
 
 
-def get_target_zones_object(target_connections):
+def get_target_zones_object(
+        target_connections: list['Connection']) -> list['Zone']:
     connected_target_zones = []
 
     for connection in target_connections:
         zone = Zone.get_zone_by_its_prop(
             connection.tuple_connections[1], 'name')
-        if (zone.shortest_path_from_current_hub_to_end is not None
+        if (isinstance(zone, Zone)
+            and zone.shortest_path_from_current_hub_to_end is not None
             and zone.metadata['zone'] != 'blocked'
             and (len(zone.l_drones) < zone.metadata['max_drones']
                  or zone.type == "end_hub")):
@@ -20,7 +22,7 @@ def get_target_zones_object(target_connections):
     return connected_target_zones
 
 
-def main_simulation(l_drones_end):
+def main_simulation(l_drones_end: list['Drone']) -> list[dict]:
     history = []
     initial_positions = {}
     for z in Zone.l_zones:
@@ -28,21 +30,29 @@ def main_simulation(l_drones_end):
             initial_positions[drone.id] = z.name
     history.append(initial_positions)
     turn_counter = 0
+
+    def lambda_func_sort(hub: Zone) -> bool | int:
+        cost: int | None = hub.shortest_path_from_current_hub_to_end
+        if cost is None:
+            return False
+        return cost
+
     while len(l_drones_end) != len(Drone.l_drones):
         hubs = [hub for hub in Zone.l_zones
                 if hub.l_drones and hub.type != 'end_hub']
-        hubs.sort(key=lambda x: (x.shortest_path_from_current_hub_to_end))
+        hubs.sort(key=lambda_func_sort)
         for hub in hubs:
-            if (Zone.costs[hub.metadata['zone']]
-                    and hub.current_cost == Zone.costs[hub.metadata['zone']]):
+            zone_cost = Zone.costs[hub.metadata['zone']]
+            if (zone_cost
+                    and hub.current_cost == zone_cost):
                 connected_z = Connection.get_connections_from_source_point(
                     hub.name)
                 target_zones_object = get_target_zones_object(
                     connected_z)
-                Zone.travel_to_other_hubs(hub, target_zones_object, hub)
+                Zone.travel_to_other_hubs(hub, target_zones_object)
                 hub.current_cost = 1
-            elif (Zone.costs[hub.metadata['zone']]
-                  and hub.current_cost < Zone.costs[hub.metadata['zone']]):
+            elif (zone_cost is not None
+                  and hub.current_cost < zone_cost):
                 print(f'D{hub.l_drones[-1].id}-{hub.name}', end=" ")
                 hub.current_cost += 1
         turn_counter += 1

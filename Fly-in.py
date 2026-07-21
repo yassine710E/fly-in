@@ -23,6 +23,9 @@ if __name__ == "__main__":
         start_zone = Zone.get_zone_by_its_prop('start_hub', 'type')
         end_zone = Zone.get_zone_by_its_prop('end_hub', 'type')
 
+        if start_zone is None or end_zone is None:
+            raise ParsingError('hub not found')
+
         # create drones list for controlling them
         for i in range(1, config_data['nb_drones'] + 1):
             Drone(i)
